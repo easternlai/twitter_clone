@@ -32,6 +32,22 @@ module.exports.verifyJwt = (token) => {
   });
 };
 
+module.exports.requireAuth = async (req, res, next) => {
+  
+  const {authorization} = req.headers;
+  
+  if(!authorization){
+    return res.status(401).send({ error: 'Not authorized'});
+  }
+    try {
+      const user = await this.verifyJwt(authorization);
+      res.locals.user = user;
+      return next();
+    } catch (err) {
+      return res.status(401).send({ error: err})
+    }
+}
+
 module.exports.loginAuthentication = async (req, res, next) => {
   const { usernameOrEmail, password } = req.body;
   const { authorization } = req.headers;
@@ -69,9 +85,6 @@ module.exports.loginAuthentication = async (req, res, next) => {
 
     /* BCRYPT COMPARE PASSWORDS, RETURN INCORRECT CREDENTIALS */
     bcrypt.compare(password, user.password, (err, result) => {
-      console.log(password);
-      console.log(user.password);
-      console.log(result);
       if (err) {
         return next(err);
       }
