@@ -1,6 +1,5 @@
-//export format CloudinaryURL params url, size, thumb
-    //split url by 'upload/'
-    //change dimensensions
+const Comment = require('../models/Comment');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 module.exports.formatCloudinaryUrl = (url, size, thumb) => {
     const splitUrl = url.split('upload/');
@@ -9,4 +8,51 @@ module.exports.formatCloudinaryUrl = (url, size, thumb) => {
     }w_${size.width},h_${size.height}${thumb && ',c_thumb'}/`;
     const formattedUrl = splitUrl[0] + splitUrl[1];
     return formattedUrl;
+};
+
+module.exports.retrieveComments = async (tweetId, offset, exclude = 0) => {
+    console.log('test');
+    try {
+            const commentsAggregation = await Comment.aggregate([
+                {
+                    $facet: {
+                        comments:[
+                            {
+                                $match: {tweet: ObjectId(tweetId)},
+                            },
+                            { $sort: { date: -1 }},
+                            { $skip: Number(exclude)},
+                            { $sort: { date: 1}},
+                            { $skip: Number(offset)},
+                            { $limit: 10 },
+                            { $lookup: {
+                                from: 'users',
+                                localField: 'author',
+                                foreignField: '_id',
+                                as: 'author',
+                                },
+                            },
+                            {$unwind: '$author'},
+                            {
+                                $unset: [
+                                    'author.password',
+                                    'author.email',
+                                ]
+                            }
+                        ], 
+                        commentCount: [
+                            {
+                                $match: {
+                                    tweet: ObjectId(tweetId),
+                                }
+                            },
+                            {$group: { _id: null, count: {$sum: 1}}}
+                        ]
+                    }
+                }
+            ]);
+            return commentsAggregation[0];
+    } catch (err) {
+        throw new Error(err);
+    }
 };
