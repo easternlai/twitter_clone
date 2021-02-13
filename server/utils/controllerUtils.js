@@ -11,7 +11,6 @@ module.exports.formatCloudinaryUrl = (url, size, thumb) => {
 };
 
 module.exports.retrieveComments = async (tweetId, offset, exclude = 0) => {
-    console.log('test');
     try {
             const commentsAggregation = await Comment.aggregate([
                 {

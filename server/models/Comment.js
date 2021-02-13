@@ -6,7 +6,9 @@ const CommentSchema = new Schema({
         type: Date,
         default: Date.now
     },
-    message: String,
+    content: String,
+    image: String,
+    thumbnail: String,
     author: {
         type: Schema.ObjectId,
         ref: 'User'
@@ -15,8 +17,22 @@ const CommentSchema = new Schema({
         type: Schema.ObjectId,
         ref: 'Tweet'
     },
+
 });
 
+CommentSchema.pre('save', async function(next){
+
+    console.log(this._id);
+    if (this.isNew) {
+        try {
+            await mongoose.model('CommentVote').create({comment: this._id});
+            next();    
+        } catch (err) {
+            next(err);
+        }
+    }
+  });
+  
 
 const commentModel = mongoose.model('Comment', CommentSchema);
 module.exports = commentModel;

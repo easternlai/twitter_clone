@@ -13,15 +13,17 @@ const upload = multer({
 
 const rateLimit = require('express-rate-limit');
 
+const tweetLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, 
+    max: 5
+});
+
+
 const { requireAuth } = require('../controllers/authController');
 const {createTweet, retrieveTweetFeed, retrieveTweet, voteTweet} = require('../controllers/tweetController');
 
 //tweetLimter rateLimit {windowMs: 15*60*1000, max: 5}
 
-const tweetLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, 
-    max: 5
-});
 
 tweetRouter.post('/', tweetLimiter, requireAuth, upload, createTweet);
 tweetRouter.post('/:tweetId/vote', requireAuth, voteTweet);

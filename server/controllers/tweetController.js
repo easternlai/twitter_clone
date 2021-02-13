@@ -31,7 +31,7 @@ module.exports.createTweet = async(req, res, next) => {
                 },
                 true
             );
-
+                console.log(thumbnailUrl)
             fs.unlinkSync(req.file.path);
             tweet = new Tweet({
                 content,
@@ -53,7 +53,6 @@ module.exports.createTweet = async(req, res, next) => {
         await tweet.save();
         await tweetVote.save();
         //save tweet vote
-        
         res.status(201).send({
             ...tweet.toObject(),
             tweetVotes: [],
